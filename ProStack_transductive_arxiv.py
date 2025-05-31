@@ -185,7 +185,7 @@ def train_syn():
             concat_feat_mean.append([])
     coeff_sum=torch.tensor(coeff_sum).to(device)
 
-    previous_images = None
+    previous_graphs = None
     previous_labels = None
 
     for interval_idx in range(0,10):
@@ -199,16 +199,16 @@ def train_syn():
         feat_syn1.data.copy_(torch.randn(feat_syn1.size()))
 
 
-        if previous_images is not None:
+        if previous_graphs is not None:
 
             pge.load_state_dict(torch.load(f'{root}/saved_ours/pge_{args.dataset}_{args.teacher_model}_{args.validation_model}_{args.reduction_rate}_{args.seed}_{interval_idx-1}.pt'))
 
             with torch.no_grad():
-                previous_images = previous_images.reshape(feat_syn1.shape[0], -1, *feat_syn1.shape[1:])
-                new_data = torch.cat([previous_images, feat_syn1.unsqueeze(1)], 1)
+                previous_graphs = previous_graphs.reshape(feat_syn1.shape[0], -1, *feat_syn1.shape[1:])
+                new_data = torch.cat([previous_graphs, feat_syn1.unsqueeze(1)], 1)
                 new_targets = torch.cat(
                     [previous_labels.reshape(labels_syn.shape[0], -1), labels_syn.unsqueeze(1)], 1)
-                grad_mask = torch.cat([torch.zeros_like(previous_images), torch.ones_like(feat_syn1).unsqueeze(1)],
+                grad_mask = torch.cat([torch.zeros_like(previous_graphs), torch.ones_like(feat_syn1).unsqueeze(1)],
                                       1).reshape(-1, *new_data.shape[2:])
 
                 new_data = new_data.reshape(-1, *new_data.shape[2:])
@@ -340,7 +340,7 @@ def train_syn():
                 print('Epoch {}'.format(i), "Best test acc:", best_test)
         end = time.perf_counter()
         print('Condensation Duration:',round(end-start), 's')
-        previous_images = torch.load(f'{root}/saved_ours/feat_{args.dataset}_{args.teacher_model}_{args.validation_model}_{args.reduction_rate}_{args.seed}_{interval_idx}.pt').to(device)
+        previous_graphs = torch.load(f'{root}/saved_ours/feat_{args.dataset}_{args.teacher_model}_{args.validation_model}_{args.reduction_rate}_{args.seed}_{interval_idx}.pt').to(device)
         previous_labels = labels_syn.clone()
 
 
